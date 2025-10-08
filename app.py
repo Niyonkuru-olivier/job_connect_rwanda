@@ -5,6 +5,15 @@ from datetime import datetime
 from functools import wraps
 from werkzeug.utils import secure_filename
 import os
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
+from werkzeug.security import generate_password_hash
+
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+
+def allowed_file(filename):
+    """Check if the file has an allowed extension."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ==========================================
 # App Configuration
@@ -17,6 +26,21 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
+app.config.update(
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USE_SSL=False,
+    MAIL_USERNAME='oniyonkuru233@gmail.com',
+    MAIL_PASSWORD='uhux ycrh jqso vyic',  # Use App Password
+    MAIL_DEFAULT_SENDER='oniyonkuru233@gmail.com'
+)
+
+mail = Mail(app)
+serializer = URLSafeTimedSerializer(app.secret_key)  # ensure app.secret_key exists
+
 
 # ==========================================
 # Initialize Extensions
@@ -78,7 +102,7 @@ class Application(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     job_id = db.Column(db.Integer, db.ForeignKey('jobs.id', ondelete='CASCADE'), nullable=False)
     status = db.Column(db.Enum('APPLIED', 'SHORTLISTED', 'REJECTED', 'HIRED'), default='APPLIED')
-    cover_letter = db.Column(db.Text)
+    cover_letter = db.Column(db.String(255))
     applied_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('applications', lazy=True))
     job = db.relationship('Job', backref=db.backref('applications', lazy=True))
@@ -192,6 +216,97 @@ def home():
     featured_jobs = Job.query.order_by(Job.created_at.desc()).limit(3).all()
     announcements = get_announcements()
     return render_template('home.html', featured_jobs=featured_jobs, announcements=announcements)
+# ==========================================
+# Contact Routes
+# ==========================================
+
+@app.route('/contact', methods=['POST'])
+def contact():
+    name = request.form.get('name')
+    email = request.form.get('email')
+    message = request.form.get('message')
+
+    if not name or not email or not message:
+        flash("All fields are required.", "warning")
+        return redirect(request.referrer)
+
+    # Create the email
+    msg = Message(
+        subject=f"New Contact Form Message from {name}",
+        recipients=["oniyonkuru233@gmail.com"],
+        body=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+    )
+    
+    try:
+        mail.send(msg)
+        flash("Your message has been sent successfully!", "success")
+    except Exception as e:
+        print("Email error:", e)
+        flash("Failed to send message. Please try again later.", "danger")
+
+    return redirect(request.referrer)
+
+# ==========================================
+# Forgot-password Routes
+# ==========================================
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = serializer.dumps(user.email, salt='password-reset-salt')
+            reset_url = url_for('reset_password', token=token, _external=True)
+
+            # Send email
+            msg = Message("Reset Your Password", recipients=[user.email])
+            msg.html = f"""
+            <p>Hello {user.full_name},</p>
+            <p>You requested a password reset. Click the link below to reset your password:</p>
+            <p><a href="{reset_url}" style="background:#00a859;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;">Reset Password</a></p>
+            <p>If you did not request this, please ignore this email.</p>
+            """
+            mail.send(msg)
+
+            flash('A password reset link has been sent to your email.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Email not found. Please use a registered email.', 'danger')
+            return redirect(url_for('forgot_password'))
+
+    return render_template('forgot_password.html')
+
+# ==========================================
+# Reset-password Routes
+# ==========================================
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = serializer.loads(token, salt='password-reset-salt', max_age=1800)  # 30 min
+    except:
+        flash('The reset link is invalid or expired.', 'danger')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm = request.form.get('confirm')
+        if password != confirm:
+            flash('Passwords do not match.', 'danger')
+            return redirect(request.url)
+        if len(password) < 8:
+            flash('Password must be at least 8 characters.', 'danger')
+            return redirect(request.url)
+
+        user = User.query.filter_by(email=email).first()
+        user.password = generate_password_hash(password)
+        db.session.commit()
+        flash('Password has been reset successfully! You can now login.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html')
+
 
 
 # ==========================================
@@ -266,11 +381,11 @@ def logout():
     return redirect(url_for('home'))
 
 
+
+
 # ==========================================
 # Employee Routes
 # ==========================================
-
-# Dashboard
 @app.route('/employee/dashboard')
 @employee_required
 def employee_dashboard():
@@ -279,8 +394,38 @@ def employee_dashboard():
     announcements = get_announcements()
     return render_template('employee/dashboard.html', applications=applications, announcements=announcements)
 
-# Browse Jobs
-@app.route('/jobs', endpoint='browse_jobs')
+@app.route('/employee/profile', methods=['GET', 'POST'])
+@employee_required
+def employee_profile():
+    user_id = session['user_id']
+    profile = EmployeeProfile.query.filter_by(user_id=user_id).first()
+    if request.method == 'POST':
+        phone = request.form.get('phone')
+        location = request.form.get('location')
+        education = request.form.get('education')
+        skills = request.form.get('skills')
+        experience = request.form.get('experience')
+
+        if profile:
+            profile.phone = phone
+            profile.location = location
+            profile.education = education
+            profile.skills = skills
+            profile.experience = experience
+        else:
+            profile = EmployeeProfile(user_id=user_id, phone=phone, location=location,
+                                      education=education, skills=skills, experience=experience)
+            db.session.add(profile)
+
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('employee_profile'))
+
+    return render_template('employee/profile.html', profile=profile)
+
+
+
+@app.route('/jobs')
 @employee_required
 def browse_jobs():
     q = request.args.get('q')
@@ -293,61 +438,48 @@ def browse_jobs():
     jobs = query.order_by(Job.created_at.desc()).all()
     return render_template('employee/jobs.html', jobs=jobs)
 
-# Employee Profile
-@app.route('/employee/profile', endpoint='employee_profile')
-@employee_required
-def employee_profile():
-    user_id = session['user_id']
-    user = User.query.get_or_404(user_id)
-    return render_template('employee/profile.html', user=user)
-
-# Edit Profile
-@app.route('/employee/profile/edit', methods=['GET', 'POST'], endpoint='edit_profile')
-@employee_required
-def edit_profile():
-    user_id = session['user_id']
-    user = User.query.get_or_404(user_id)
-    if request.method == 'POST':
-        user.name = request.form.get('name')
-        user.email = request.form.get('email')
-        user.phone = request.form.get('phone')
-        # You can add password change logic if needed
-        db.session.commit()
-        flash('Profile updated successfully.', 'success')
-        return redirect(url_for('employee_profile'))
-    return render_template('employee/edit_profile.html', user=user)
-
-# Apply to Job
-@app.route('/jobs/<int:job_id>/apply', methods=['POST'], endpoint='apply_job')
+@app.route('/jobs/<int:job_id>/apply', methods=['GET', 'POST'])
 @employee_required
 def apply_job(job_id):
-    user_id = session['user_id']
     job = Job.query.get_or_404(job_id)
-    # Prevent multiple applications
-    existing = Application.query.filter_by(user_id=user_id, job_id=job_id).first()
-    if existing:
-        flash('You have already applied to this job.', 'warning')
-    else:
-        application = Application(user_id=user_id, job_id=job_id)
+    user_id = session['user_id']
+
+    if request.method == 'POST':
+        cover_letter_file = request.files.get('cover_letter')
+
+        # Validate file
+        if not cover_letter_file or cover_letter_file.filename == '':
+            flash('Please upload a cover letter document.', 'warning')
+            return redirect(request.url)
+
+        if not allowed_file(cover_letter_file.filename):
+            flash('Invalid file type. Please upload a PDF, DOC, or DOCX.', 'danger')
+            return redirect(request.url)
+
+        # Prevent duplicate applications
+        if Application.query.filter_by(user_id=user_id, job_id=job_id).first():
+            flash('You have already applied for this job.', 'warning')
+            return redirect(url_for('browse_jobs'))
+
+        # Save file
+        filename = secure_filename(cover_letter_file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        cover_letter_file.save(filepath)
+
+        # Save ONLY the filename in the database
+        application = Application(
+            user_id=user_id,
+            job_id=job_id,
+            cover_letter=filename  # <--- FIX: store only filename
+        )
         db.session.add(application)
         db.session.commit()
-        flash('Application submitted successfully.', 'success')
-    return redirect(url_for('browse_jobs'))
 
-# View My Applications
-@app.route('/employee/applications', endpoint='my_applications')
-@employee_required
-def my_applications():
-    user_id = session['user_id']
-    applications = Application.query.filter_by(user_id=user_id).join(Job).order_by(Application.applied_at.desc()).all()
-    return render_template('employee/applications.html', applications=applications)
+        flash('Application submitted successfully!', 'success')
+        return redirect(url_for('employee_dashboard'))
 
-# View Announcements
-@app.route('/employee/announcements', endpoint='employee_announcements')
-@employee_required
-def employee_announcements():
-    announcements = get_announcements()
-    return render_template('employee/announcements.html', announcements=announcements)
+    return render_template('employee/apply.html', job=job)
+
 
 # ==========================================
 # Upload Employee Documents
@@ -358,28 +490,52 @@ def upload_documents():
     user_id = session['user_id']
     user = User.query.get_or_404(user_id)
 
+    # Allowed file types
+    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+
+    def allowed_file(filename):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
     if request.method == 'POST':
         if 'document' not in request.files:
             flash('No file part', 'danger')
             return redirect(request.url)
+
         file = request.files['document']
+
         if file.filename == '':
             flash('No selected file', 'danger')
             return redirect(request.url)
-        if file:
-            # Save file to static/uploads or another folder
+
+        if file and allowed_file(file.filename):
+            # Save file to static/uploads
             filename = secure_filename(file.filename)
-            filepath = os.path.join('static/uploads', filename)
+            upload_folder = app.config.get('UPLOAD_FOLDER', 'static/uploads')
+            os.makedirs(upload_folder, exist_ok=True)
+            filepath = os.path.join(upload_folder, filename)
             file.save(filepath)
-            
-            # Optional: save the file path in database
-            user.document_path = filepath
+
+            # Save record in EmployeeDocument table
+            file_type = request.form.get('file_type', 'CV')  # default type if not provided
+            doc = EmployeeDocument(
+                user_id=user_id,
+                file_name=filename,
+                file_path=filepath,
+                file_type=file_type
+            )
+            db.session.add(doc)
             db.session.commit()
 
-            flash('Document uploaded successfully.', 'success')
-            return redirect(url_for('employee_dashboard'))
+            flash('Document uploaded successfully!', 'success')
+            return redirect(url_for('upload_documents'))
+        else:
+            flash('Invalid file type. Allowed types: pdf, doc, docx', 'danger')
+            return redirect(request.url)
 
-    return render_template('employee/documents.html', user=user)
+    # GET request: show uploaded documents
+    documents = EmployeeDocument.query.filter_by(user_id=user_id).all()
+    return render_template('employee/documents.html', documents=documents, user=user)
+
 
 
 
@@ -610,7 +766,7 @@ def admin_logout():
     session.pop('admin_id', None)
     session.pop('admin_email', None)
     flash('Admin logged out.', 'info')
-    return redirect(url_for('admin_login'))
+    return redirect(url_for('home'))
 
 
 @app.route('/admin')
@@ -628,18 +784,28 @@ def admin_dashboard():
         total_applications=total_applications,
         total_announcements=total_announcements
     )
-    
+
+
 @app.route('/admin/users', endpoint='manage_users')
 @admin_required
 def manage_users():
     users = User.query.order_by(User.created_at.desc()).all()
     return render_template('admin/users.html', users=users)
 
+
 @app.route('/admin/jobs', endpoint='manage_jobs')
 @admin_required
 def manage_jobs():
     jobs = Job.query.order_by(Job.created_at.desc()).all()
     return render_template('admin/jobs.html', jobs=jobs)
+
+
+@app.route('/admin/applications', endpoint='manage_applications')
+@admin_required
+def manage_applications():
+    applications = Application.query.order_by(Application.applied_at.desc()).all()
+    return render_template('admin/applications.html', applications=applications)
+
 
 @app.route('/admin/announcements', methods=['GET', 'POST'], endpoint='manage_announcements')
 @admin_required
@@ -656,6 +822,7 @@ def manage_announcements():
     announcements = Announcement.query.order_by(Announcement.created_at.desc()).all()
     return render_template('admin/announcements.html', announcements=announcements)
 
+
 @app.route('/admin/announcements/<int:ann_id>/delete', endpoint='delete_announcement')
 @admin_required
 def delete_announcement(ann_id):
@@ -664,6 +831,7 @@ def delete_announcement(ann_id):
     db.session.commit()
     flash('Announcement deleted.', 'info')
     return redirect(url_for('manage_announcements'))
+
 
 @app.route('/admin/new', methods=['GET', 'POST'], endpoint='add_admin')
 @admin_required
@@ -683,6 +851,8 @@ def add_admin():
             return redirect(url_for('admin_dashboard'))
 
     return render_template('admin/new_admin.html')
+
+
 @app.route('/admin/users/<int:user_id>/block', endpoint='block_user')
 @admin_required
 def block_user(user_id):
@@ -691,6 +861,7 @@ def block_user(user_id):
     db.session.commit()
     flash(f'User {user.full_name} removed from system.', 'info')
     return redirect(url_for('manage_users'))
+
 
 # =========================
 # Admin: Delete Job

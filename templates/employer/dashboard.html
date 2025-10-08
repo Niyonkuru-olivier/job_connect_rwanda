@@ -160,17 +160,29 @@
 </head>
 <body>
   <header>
-    <div class="wrap">
-      <div>
-        <h1>Employer Dashboard</h1>
-        <small>{{ company.name if company else 'No company profile yet' }}</small>
-      </div>
-      <div class="actions">
-        <a href="{{ url_for('company_profile') }}">Edit Company</a>
-        <a href="{{ url_for('create_job') }}">Post Job</a>
-      </div>
+  <div class="wrap">
+    <div>
+      <h1>Employer Dashboard</h1>
+      <small>{{ company.name if company else 'No company profile yet' }}</small>
     </div>
-  </header>
+    <div class="actions">
+      <a href="{{ url_for('company_profile') }}">Edit Company</a>
+      <a href="{{ url_for('create_job') }}">Post Job</a>
+      <!-- Logout Form -->
+  <form action="{{ url_for('logout') }}" method="GET" style="display:inline;">
+    <button type="submit" style="
+      padding:8px 14px;
+      border-radius:6px;
+      border:1px solid #ddd;
+      background:#fff;
+      color: var(--hmr-green);
+      cursor:pointer;
+      transition:0.3s;
+    ">Logout</button>
+    </div>
+  </div>
+</header>
+
 
   <!-- ✅ Announcements Section -->
   <section class="announcements">

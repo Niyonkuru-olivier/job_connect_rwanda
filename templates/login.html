@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Login — HireMe Rwanda</title>
 
-  <!-- Embedded CSS (includes navbar + login styles) -->
+  <!-- Embedded CSS -->
   <style>
     /* Navbar */
     .navbar {
@@ -100,6 +100,49 @@
       text-decoration: none;
       margin: 0 5px;
     }
+
+    /* Forgot Password Modal */
+    #forgotModal {
+      display: none;
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #forgotModal .modal-content {
+      background:white;
+      padding:30px;
+      border-radius:10px;
+      width:400px;
+      max-width:90%;
+      position:relative;
+    }
+    #forgotModal h2 { color:#00a859; text-align:center; margin-bottom:20px; }
+    #forgotModal input[type=email] {
+      width:100%;
+      padding:12px;
+      margin-bottom:15px;
+      border-radius:6px;
+      border:1px solid #ccc;
+    }
+    #forgotModal button {
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:6px;
+      background:#00a859;
+      color:white;
+      font-size:1rem;
+      cursor:pointer;
+    }
+    #forgotModal #closeModal {
+      position:absolute;
+      top:10px; right:15px;
+      font-size:20px;
+      cursor:pointer;
+    }
   </style>
 </head>
 <body>
@@ -145,12 +188,27 @@
       </form>
 
       <div class="links">
-        <p><a href="{{ url_for('register') }}">Register</a> | <a href="#">Forgot Password?</a></p>
+        <p>
+          <a href="{{ url_for('register') }}">Register</a> | 
+          <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+        </p>
       </div>
     </div>
   </div>
 
-  <!-- Inline JS validation -->
+  <!-- Forgot Password Modal -->
+  <div id="forgotModal">
+    <div class="modal-content">
+      <span id="closeModal">&times;</span>
+      <h2>Reset Password</h2>
+      <form id="forgotForm" method="POST" action="{{ url_for('forgot_password') }}">
+        <input type="email" name="email" placeholder="Enter your registered email" required>
+        <button type="submit">Send Reset Link</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Inline JS validation and modal -->
   <script>
   (function(){
     const form = document.getElementById('loginForm');
@@ -168,10 +226,9 @@
     form.addEventListener('submit', function(e) {
       hideErrors();
       let valid = true;
-
       const email = emailField.value.trim();
       const pw = passwordField.value.trim();
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // ✅ FIXED HERE
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!emailRegex.test(email)) {
         errEmail.style.display = 'block';
@@ -190,8 +247,26 @@
       btn.disabled = true;
       btn.textContent = 'Signing in...';
     });
+
+    // Modal handling
+    const modal = document.getElementById('forgotModal');
+    const openLink = document.getElementById('forgotPasswordLink');
+    const closeBtn = document.getElementById('closeModal');
+
+    openLink.addEventListener('click', function(e){
+      e.preventDefault();
+      modal.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', function(){
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(e){
+      if(e.target === modal) modal.style.display = 'none';
+    });
   })();
-</script>
+  </script>
 
 </body>
 </html>

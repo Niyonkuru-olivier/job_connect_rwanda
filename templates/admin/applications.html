@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Applications — HireMe Rwanda</title>
+  <style>
+    :root { --green:#00a859; --bg:#f5f7f7; --dark:#222; }
+    body { font-family:Arial,Helvetica,sans-serif; background:var(--bg); margin:0; color:var(--dark); }
+    .container { max-width:1100px; margin:30px auto; padding:20px; }
+    header { display:flex; justify-content:space-between; align-items:center; }
+    h1 { color:var(--green); }
+    table { width:100%; border-collapse:collapse; margin-top:20px; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+    th, td { padding:12px 15px; text-align:left; border-bottom:1px solid #eee; }
+    th { background:var(--green); color:#fff; }
+    tr:hover { background:#f0fff5; }
+    a.btn { text-decoration:none; padding:6px 12px; border-radius:6px; border:1px solid #ddd; background:#fff; margin-right:4px; }
+    a.btn.primary { background:var(--green); color:#fff; border:none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Applications</h1>
+      <div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn">Dashboard</a>
+      </div>
+    </header>
+
+    {% if applications %}
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Applicant</th>
+            <th>Job</th>
+            <th>Status</th>
+            <th>Applied At</th>
+            <th>Cover Letter</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ app.user.full_name }}<br>{{ app.user.email }}</td>
+            <td>{{ app.job.title }}</td>
+            <td>{{ app.status }}</td>
+            <td>{{ app.applied_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+              {% if app.cover_letter %}
+                <a href="{{ url_for('static', filename='uploads/' + app.cover_letter) }}" target="_blank" class="btn primary">View</a>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No applications found.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

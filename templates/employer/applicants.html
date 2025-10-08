@@ -1,25 +1,41 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8"><title>Applicants for {{ job.title }}</title>
+  <meta charset="utf-8">
+  <title>Applicants for {{ job.title }}</title>
   <style>
-    body{font-family:Arial;background:#f8f8f8;margin:0}
-    .wrap{max-width:900px;margin:28px auto;padding:18px}
-    .app{background:#fff;padding:14px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-    .btn{padding:8px 10px;border-radius:6px;text-decoration:none;border:1px solid #ddd;background:#fff}
-    .btn.primary{background:#00a859;color:#fff;border:none}
-    .status{font-weight:600}
+    body { font-family: Arial; background: #f8f8f8; margin:0; }
+    .wrap { max-width:900px; margin:28px auto; padding:18px; }
+    .app { background:#fff; padding:14px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .info { max-width: 70%; }
+    .btn { padding:8px 10px; border-radius:6px; text-decoration:none; border:1px solid #ddd; background:#fff; margin-right:5px; cursor:pointer; }
+    .btn.primary { background:#00a859; color:#fff; border:none; }
+    .status { font-weight:600; }
+    .cover-link { display:block; margin:5px 0; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h2>Applicants — {{ job.title }}</h2>
-    {% for a in applicants %}
+
+    {% if applicants %}
+      {% for a in applicants %}
       <div class="app">
-        <div>
+        <div class="info">
           <h3 style="margin:0">{{ a.user.full_name }}</h3>
           <p style="margin:2px 0">{{ a.user.email }} • Applied: {{ a.applied_at.strftime('%Y-%m-%d') }}</p>
-          <p style="margin:2px 0">Cover Letter: {{ a.cover_letter or '—' }}</p>
+
+          {% if a.cover_letter %}
+            <p class="cover-link">
+              📄 Cover Letter: 
+              <a href="{{ url_for('static', filename='uploads/' + a.cover_letter) }}" target="_blank">
+                View / Download
+              </a>
+            </p>
+          {% else %}
+            <p>📄 Cover Letter: —</p>
+          {% endif %}
+
           <p>Status: <span class="status">{{ a.status }}</span></p>
         </div>
         <div>
@@ -37,10 +53,12 @@
           </form>
         </div>
       </div>
+      {% endfor %}
     {% else %}
       <p>No applicants yet.</p>
-    {% endfor %}
-    <p><a href="{{ url_for('employer_dashboard') }}">Back to dashboard</a></p>
+    {% endif %}
+
+    <p><a href="{{ url_for('employer_dashboard') }}">← Back to dashboard</a></p>
   </div>
 </body>
 </html>

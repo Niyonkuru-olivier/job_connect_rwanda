@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><title>Company Profile</title>
+  <style>
+    body{font-family:Arial;background:#f8f8f8;margin:0}
+    .card{max-width:800px;margin:28px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,0.06)}
+    label{display:block;margin:8px 0;font-weight:600}
+    input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd}
+    .btn.primary{background:#00a859;color:#fff;padding:10px 14px;border-radius:8px;border:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>{{ company.name if company else 'Create Company Profile' }}</h2>
+    <form method="POST">
+      <label>Company Name</label>
+      <input name="name" value="{{ company.name if company else '' }}" required>
+      <label>Description</label>
+      <textarea name="description">{{ company.description if company else '' }}</textarea>
+      <label>Website</label>
+      <input name="website" value="{{ company.website if company else '' }}">
+      <div style="margin-top:12px">
+        <button class="btn primary" type="submit">{{ 'Update' if company else 'Create' }}</button>
+        <a href="{{ url_for('employer_dashboard') }}" style="margin-left:8px;">Back</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

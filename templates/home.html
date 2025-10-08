@@ -1,0 +1,138 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="home-container">
+
+  <!-- ✅ Navigation -->
+  <nav class="navbar">
+    <div class="logo">HireMe Rwanda</div>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <ul class="nav-links">
+      <li><a href="{{ url_for('home') }}">Home</a></li>
+      <li><a href="#about">About Us</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="{{ url_for('login') }}">Login</a></li>
+      <li><a href="{{ url_for('register') }}" class="btn primary">Register</a></li>
+    </ul>
+  </nav>
+
+  <!-- ✅ Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Find Your Next Opportunity with <span class="brand">HireMe Rwanda</span></h1>
+      <p>Bridging the gap between Employers and Job Seekers across Rwanda</p>
+
+      <section class="announcements">
+  <h2>Announcements</h2>
+  {% if announcements %}
+    {% for a in announcements %}
+      <div class="ann-card">
+        <strong>{{ a.title }}</strong>
+        <p>{{ a.content }}</p>
+        <small>{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No announcements at this time.</p>
+  {% endif %}
+</section>
+
+<style>
+  .announcements { margin:20px 0; }
+  .ann-card {
+    background:#d4f4e0;  /* light green card */
+    border-left:4px solid #00a859;
+    padding:12px 16px;
+    border-radius:8px;
+    margin-bottom:10px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.08);
+  }
+  .ann-card strong { display:block; font-size:16px; margin-bottom:4px; }
+  .ann-card p { margin:0 0 4px 0; }
+  .ann-card small { color:#555; }
+</style>
+
+
+      <div class="search-bar">
+        <input type="text" placeholder="Search jobs by title, keyword..." />
+        <input type="text" placeholder="Location" />
+        <button>Search</button>
+      </div>
+
+      <div class="cta-buttons">
+        <a href="{{ url_for('register') }}" class="btn primary">Find Jobs</a>
+        <a href="{{ url_for('register') }}?role=employer" class="btn secondary">Post a Job</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Featured Jobs -->
+  <section class="featured-jobs">
+    <h2>Featured Jobs</h2>
+    <div class="job-list">
+      {% for job in featured_jobs %}
+      <div class="job-card">
+        <h3>{{ job.title }}</h3>
+        <p>{{ job.company.name }}</p>
+        <p>{{ job.location }}</p>
+        <p>Posted: {{ job.created_at }}</p>
+        <p>Deadline: {{ job.deadline }}</p>
+        <a href="{{ url_for('login') }}"><center><button>View Details</button></center></a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ✅ How It Works -->
+  <section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <h3>1. Create Account</h3>
+        <p>Sign up as an Employer or Employee to get started.</p>
+      </div>
+      <div class="step">
+        <h3>2. Build Profile</h3>
+        <p>Employers add company details, employees upload CVs & certificates.</p>
+      </div>
+      <div class="step">
+        <h3>3. Connect</h3>
+        <p>Employers post jobs, employees apply & get hired.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ About Us -->
+  <section id="about" class="about">
+    <h2>About Us</h2>
+    <p>
+      HireMe Rwanda is a digital platform dedicated to reducing unemployment by connecting
+      skilled Rwandans with employers. Our mission is to empower individuals and help companies
+      find the right talent efficiently and professionally.
+    </p>
+  </section>
+
+  <!-- ✅ Contact Section -->
+  <section id="contact" class="contact">
+    <h2>Contact Us</h2>
+    <form>
+      <input type="text" placeholder="Your Name" required />
+      <input type="email" placeholder="Your Email" required />
+      <textarea placeholder="Your Message"></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+    <div class="contact-info">
+      <p>Email: support@hiremerwanda.com</p>
+      <p>Phone: +250 788 123 456</p>
+      <p>Location: Kigali, Rwanda</p>
+    </div>
+  </section>
+
+  <!-- ✅ Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 HireMe Rwanda. All Rights Reserved.</p>
+  </footer>
+
+</div>
+
+{% endblock %}

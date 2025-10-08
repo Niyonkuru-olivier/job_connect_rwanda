@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Manage Jobs — Admin Panel</title>
+  <style>
+    body { font-family:Arial,Helvetica,sans-serif; background:#f5f7f7; margin:0; color:#222; }
+    .container { max-width:1000px; margin:30px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th, td { border:1px solid #ddd; padding:10px; }
+    th { background:#00a859; color:#fff; }
+    a.btn.delete { background:#ff4d4d; color:#fff; padding:6px 10px; border-radius:6px; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Manage Jobs</h1>
+    <table>
+      <tr><th>ID</th><th>Title</th><th>Company</th><th>Location</th><th>Type</th><th>Deadline</th><th>Actions</th></tr>
+      {% for j in jobs %}
+        <tr>
+          <td>{{ j.id }}</td>
+          <td>{{ j.title }}</td>
+          <td>{{ j.company.name }}</td>
+          <td>{{ j.location }}</td>
+          <td>{{ j.type }}</td>
+          <td>{{ j.deadline.strftime('%Y-%m-%d') if j.deadline else '—' }}</td>
+          <td><a href="{{ url_for('delete_job_admin', job_id=j.id) }}" class="btn delete" onclick="return confirm('Delete this job?')">Delete</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" align="center">No jobs found.</td></tr>
+      {% endfor %}
+    </table>
+    <p><a href="{{ url_for('admin_dashboard') }}">← Back to Dashboard</a></p>
+  </div>
+</body>
+</html>

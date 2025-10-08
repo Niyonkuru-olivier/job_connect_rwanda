@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thank You — HireMe Rwanda</title>
+
+  <!-- Embedded CSS -->
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: #f8f8f8; margin: 0; color: #333; }
+
+    .thankyou-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 20px;
+      min-height: 100vh;
+    }
+
+    .thankyou-card {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 700px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .thankyou-card h2 {
+      color: #00a859;
+      margin-bottom: 20px;
+    }
+
+    .thankyou-card p {
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn.primary {
+      background: #00a859;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+
+    .btn.secondary {
+      background: #e6f5ee;
+      color: #00a859;
+      padding: 10px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+
+    .note {
+      color: #666;
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="thankyou-container">
+    <div class="thankyou-card">
+      <h2>Thank you for registering!</h2>
+
+      {% if role == 'EMPLOYEE' %}
+        <p>Your employee account request has been received. You can now log in and build your professional profile, upload your CV and certificates, and start applying for jobs.</p>
+      {% elif role == 'EMPLOYER' %}
+        <p>Your employer account request has been received. You can now log in, complete your company profile, and start posting jobs to reach qualified candidates.</p>
+      {% else %}
+        <p>Your registration has been received. You can now log in.</p>
+      {% endif %}
+
+      <div class="actions">
+        <a class="btn primary" href="{{ url_for('login') }}">Go to Login</a>
+        <a class="btn secondary" href="{{ url_for('home') }}">Back to Home</a>
+      </div>
+
+      <p class="note">You will be redirected to the login page automatically in 60 seconds.</p>
+    </div>
+  </div>
+
+  <script>
+    // Optional: auto-redirect after 60 seconds
+    setTimeout(function(){
+      window.location.href = "{{ url_for('login') }}";
+    }, 60000);
+  </script>
+</body>
+</html>

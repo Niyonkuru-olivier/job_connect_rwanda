@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile — HireMe Rwanda</title>
+  <style>
+    body { font-family: Inter, sans-serif; background:#f8f8f8; margin:0; }
+    .navbar { display:flex; justify-content:space-between; align-items:center; background:white; padding:18px 30px; box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+    .logo { font-size:1.3rem; font-weight:700; color:#00a859; }
+    .nav-links a { margin-left:16px; text-decoration:none; color:#333; font-weight:500; }
+    .container { max-width:800px; margin:40px auto; background:white; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.08);}
+    h2 { color:#00a859; margin-bottom:10px; }
+    label { display:block; margin-top:15px; font-weight:600; }
+    input, textarea { width:100%; border:1px solid #ccc; border-radius:6px; padding:10px; }
+    button { background:#00a859; color:white; padding:12px 20px; border:none; border-radius:6px; margin-top:20px; cursor:pointer;}
+    button:hover { background:#00914d; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">HireMe Rwanda</div>
+    <div class="nav-links">
+      <a href="{{ url_for('browse_jobs') }}">Jobs</a>
+      <a href="{{ url_for('employee_dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>My Profile</h2>
+
+    <form method="POST">
+      <label>Phone</label>
+      <input type="text" name="phone" value="{{ profile.phone if profile else '' }}">
+
+      <label>Location</label>
+      <input type="text" name="location" value="{{ profile.location if profile else '' }}">
+
+      <label>Education</label>
+      <textarea name="education">{{ profile.education if profile else '' }}</textarea>
+
+      <label>Skills</label>
+      <textarea name="skills">{{ profile.skills if profile else '' }}</textarea>
+
+      <label>Work Experience</label>
+      <textarea name="experience">{{ profile.experience if profile else '' }}</textarea>
+
+      <button type="submit">Save Profile</button>
+    </form>
+  </div>
+
+</body>
+</html>

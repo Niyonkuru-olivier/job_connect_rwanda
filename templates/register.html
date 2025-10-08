@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create Account — HireMe Rwanda</title>
+
+  <!-- Embedded CSS (all-in-one) -->
+  <style>
+    /* --- Navbar (copied from home.css) --- */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 30px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo { font-size: 1.25rem; font-weight: 700; color: #00a859; }
+    .nav-links { list-style: none; display: flex; gap: 16px; margin: 0; padding: 0; }
+    .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
+    .nav-links .btn.primary { background: #00a859; color: white; padding: 8px 14px; border-radius: 6px; }
+
+    /* --- Page background --- */
+    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: #f8f8f8; color: #333; margin: 0; }
+
+    /* --- Flash messages --- */
+    .flash { max-width: 900px; margin: 16px auto; padding: 12px 16px; border-radius: 6px; }
+    .flash.success { background: #e6f8ef; color: #046a3a; border: 1px solid rgba(0,168,89,0.12); }
+    .flash.error { background: #fff0f0; color: #a32a2a; border: 1px solid rgba(198,40,40,0.12); }
+    .flash.warning { background: #fff8e6; color: #8a5a00; border: 1px solid rgba(255,215,0,0.12); }
+
+    /* --- Register card --- */
+    .register-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 20px;
+      min-height: calc(100vh - 80px);
+    }
+    .register-card {
+      background: white;
+      padding: 36px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(8,24,48,0.06);
+      max-width: 640px;
+      width: 100%;
+    }
+    .register-card h2 { text-align: center; margin-bottom: 6px; color: #00a859; }
+    .subtitle { text-align: center; color: #666; margin: 0 0 18px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width:720px) { .two-col { grid-template-columns: 1fr 1fr; gap: 18px; } }
+
+    .form-group { margin-bottom: 14px; display: flex; flex-direction: column; text-align: left; }
+    .form-group label { font-weight: 600; margin-bottom: 6px; color: #333; }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 11px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 0.98rem; background: #fff;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: #00a859; box-shadow: 0 0 0 4px rgba(0,168,89,0.06);
+    }
+
+    .form-foot { margin: 12px 0 18px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .hint { color: #6b7280; font-size: 0.9rem; }
+
+    .btn { display: inline-block; text-decoration: none; border: none; cursor: pointer; border-radius: 8px; font-weight: 600; }
+    .btn.primary { width: 100%; background: #00a859; color: white; padding: 12px 14px; font-size: 1rem; }
+    .btn.primary[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+    .login-link { margin-top: 14px; text-align: center; }
+    .login-link a { color: #00a859; font-weight: 600; text-decoration: none; }
+
+    .form-group small.error { color: #c62828; display: none; font-size: 0.86rem; margin-top: 6px; }
+
+    /* tiny helper layout */
+    .row { display:flex; gap:12px; align-items:center; }
+    .role-radio { display:inline-flex; gap:8px; align-items:center; }
+
+    /* footer small note */
+    .small-note { font-size: 0.85rem; color: #666; text-align:center; margin-top:12px; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" role="navigation">
+    <div class="logo">HireMe Rwanda</div>
+    <div>
+      <ul class="nav-links" style="align-items:center;">
+        <li><a href="{{ url_for('home') }}">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="{{ url_for('login') }}">Login</a></li>
+        <li><a href="{{ url_for('register') }}" class="btn primary">Register</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- FLASH MESSAGES (Flask) -->
+  <div style="max-width:900px; margin:14px auto;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ 'error' if category == 'danger' else category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- REGISTER FORM -->
+  <div class="register-container">
+    <div class="register-card">
+      <h2>Create Your Account</h2>
+      <p class="subtitle">Join HireMe Rwanda to find jobs or hire top talent.</p>
+
+      <form method="POST" id="registerForm" novalidate>
+        <div class="two-col">
+          <div class="form-group">
+            <label for="full_name">Full Name</label>
+            <input id="full_name" name="full_name" type="text" placeholder="Enter your full name" required />
+            <small class="error" id="err_full_name">Full name is required (min 3 characters).</small>
+          </div>
+
+          <div class="form-group">
+            <label for="national_id">National ID (16 digits)</label>
+            <input id="national_id" name="national_id" type="text" maxlength="16" placeholder="1234567890123456" required />
+            <small class="error" id="err_national_id">National ID must be exactly 16 digits.</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="example@email.com" required />
+          <small class="error" id="err_email">Enter a valid email address.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="role">Role</label>
+          <select id="role" name="role" required>
+            <option value="">Select your role</option>
+            <option value="EMPLOYEE">Employee</option>
+            <option value="EMPLOYER">Employer</option>
+          </select>
+          <small class="error" id="err_role">Please select a role.</small>
+        </div>
+
+        <div class="two-col">
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" placeholder="Enter password" required />
+            <small class="error" id="err_password">Password must be at least 8 chars, include uppercase, lowercase, number & symbol.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input id="confirm_password" name="confirm_password" type="password" placeholder="Re-enter password" required />
+            <small class="error" id="err_confirm">Passwords do not match.</small>
+          </div>
+        </div>
+
+        <div class="form-foot">
+          <small class="hint">By registering, you agree to our terms and privacy policy.</small>
+        </div>
+
+        <button id="submitBtn" type="submit" class="btn primary">Create Account</button>
+      </form>
+
+      <p class="login-link">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+      <p class="small-note">We recommend using a strong, unique password.</p>
+    </div>
+  </div>
+
+  <!-- Inline JavaScript client-side validation -->
+  <script>
+    (function(){
+      const form = document.getElementById('registerForm');
+      const submitBtn = document.getElementById('submitBtn');
+
+      const errFullName = document.getElementById('err_full_name');
+      const errNational = document.getElementById('err_national_id');
+      const errEmail = document.getElementById('err_email');
+      const errRole = document.getElementById('err_role');
+      const errPassword = document.getElementById('err_password');
+      const errConfirm = document.getElementById('err_confirm');
+
+      function hideAllErrors() {
+        [errFullName, errNational, errEmail, errRole, errPassword, errConfirm].forEach(e => { if(e) e.style.display = 'none'; });
+      }
+
+      function isValidEmail(email) {
+        // conservative email regex, acceptable for client-side only
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      function isStrongPassword(pw) {
+        // min 8, 1 lowercase, 1 uppercase, 1 digit, 1 special
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(pw);
+      }
+
+      form.addEventListener('submit', function(e){
+        hideAllErrors();
+        let ok = true;
+
+        const fullName = form.full_name.value.trim();
+        const national = form.national_id.value.trim();
+        const email = form.email.value.trim();
+        const role = form.role.value;
+        const pw = form.password.value;
+        const cpw = form.confirm_password.value;
+
+        if (fullName.length < 3) { errFullName.style.display = 'block'; ok = false; }
+        if (!/^\d{16}$/.test(national)) { errNational.style.display = 'block'; ok = false; }
+        if (!isValidEmail(email)) { errEmail.style.display = 'block'; ok = false; }
+        if (!role) { errRole.style.display = 'block'; ok = false; }
+        if (!isStrongPassword(pw)) { errPassword.style.display = 'block'; ok = false; }
+        if (pw !== cpw) { errConfirm.style.display = 'block'; ok = false; }
+
+        if (!ok) {
+          e.preventDefault();
+          // scroll to first visible error
+          const firstErr = document.querySelector('.error[style*="display: block"], .error:not([style])');
+          if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return false;
+        }
+
+        // disable button to avoid double submits
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+      });
+    })();
+  </script>
+</body>
+</html>

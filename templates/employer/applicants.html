@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><title>Applicants for {{ job.title }}</title>
+  <style>
+    body{font-family:Arial;background:#f8f8f8;margin:0}
+    .wrap{max-width:900px;margin:28px auto;padding:18px}
+    .app{background:#fff;padding:14px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+    .btn{padding:8px 10px;border-radius:6px;text-decoration:none;border:1px solid #ddd;background:#fff}
+    .btn.primary{background:#00a859;color:#fff;border:none}
+    .status{font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>Applicants — {{ job.title }}</h2>
+    {% for a in applicants %}
+      <div class="app">
+        <div>
+          <h3 style="margin:0">{{ a.user.full_name }}</h3>
+          <p style="margin:2px 0">{{ a.user.email }} • Applied: {{ a.applied_at.strftime('%Y-%m-%d') }}</p>
+          <p style="margin:2px 0">Cover Letter: {{ a.cover_letter or '—' }}</p>
+          <p>Status: <span class="status">{{ a.status }}</span></p>
+        </div>
+        <div>
+          <form method="POST" action="{{ url_for('update_application_status', app_id=a.id) }}" style="display:inline">
+            <input type="hidden" name="status" value="SHORTLISTED">
+            <button class="btn" type="submit">Shortlist</button>
+          </form>
+          <form method="POST" action="{{ url_for('update_application_status', app_id=a.id) }}" style="display:inline">
+            <input type="hidden" name="status" value="REJECTED">
+            <button class="btn" type="submit">Reject</button>
+          </form>
+          <form method="POST" action="{{ url_for('update_application_status', app_id=a.id) }}" style="display:inline">
+            <input type="hidden" name="status" value="HIRED">
+            <button class="btn primary" type="submit">Hire</button>
+          </form>
+        </div>
+      </div>
+    {% else %}
+      <p>No applicants yet.</p>
+    {% endfor %}
+    <p><a href="{{ url_for('employer_dashboard') }}">Back to dashboard</a></p>
+  </div>
+</body>
+</html>

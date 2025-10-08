@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><title>{{ 'Edit Job' if job else 'Post Job' }}</title>
+  <style>
+    body{font-family:Arial;background:#f8f8f8;margin:0}
+    .card{max-width:900px;margin:28px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,0.06)}
+    label{display:block;margin:8px 0;font-weight:600}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd}
+    .btn.primary{background:#00a859;color:#fff;padding:10px 14px;border-radius:8px;border:none}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>{{ 'Edit Job' if job else 'Post a Job' }}</h2>
+    <form method="POST">
+      <label>Title</label>
+      <input name="title" value="{{ job.title if job else '' }}" required>
+      <label>Description</label>
+      <textarea name="description" required>{{ job.description if job else '' }}</textarea>
+      <label>Requirements</label>
+      <textarea name="requirements">{{ job.requirements if job else '' }}</textarea>
+      <div class="two-col">
+        <div>
+          <label>Location</label>
+          <input name="location" value="{{ job.location if job else '' }}">
+        </div>
+        <div>
+          <label>Salary</label>
+          <input name="salary" value="{{ job.salary if job else '' }}">
+        </div>
+      </div>
+      <label>Type</label>
+      <select name="type">
+        <option value="FULL_TIME" {% if job and job.type=='FULL_TIME' %}selected{% endif %}>Full Time</option>
+        <option value="PART_TIME" {% if job and job.type=='PART_TIME' %}selected{% endif %}>Part Time</option>
+        <option value="CONTRACT" {% if job and job.type=='CONTRACT' %}selected{% endif %}>Contract</option>
+        <option value="INTERNSHIP" {% if job and job.type=='INTERNSHIP' %}selected{% endif %}>Internship</option>
+      </select>
+      <label>Deadline</label>
+      <input type="date" name="deadline" value="{{ job.deadline.strftime('%Y-%m-%d') if job and job.deadline else '' }}">
+      <div style="margin-top:12px">
+        <button class="btn primary" type="submit">Save</button>
+        <a href="{{ url_for('employer_dashboard') }}" style="margin-left:8px;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

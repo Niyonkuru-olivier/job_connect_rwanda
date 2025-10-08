@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Manage Users — Admin Panel</title>
+  <style>
+    body { font-family:Arial,Helvetica,sans-serif; background:#f5f7f7; color:#222; margin:0; }
+    .container { max-width:1000px; margin:30px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th, td { border:1px solid #ddd; padding:10px; text-align:left; }
+    th { background:#00a859; color:#fff; }
+    a.btn { padding:6px 10px; text-decoration:none; border-radius:6px; border:1px solid #ccc; }
+    .btn.delete { background:#ff4d4d; color:#fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Manage Users</h1>
+    <table>
+      <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr>
+      {% for u in users %}
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.full_name }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.role }}</td>
+          <td><a href="{{ url_for('block_user', user_id=u.id) }}" class="btn delete" onclick="return confirm('Remove this user?')">Remove</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" align="center">No users found.</td></tr>
+      {% endfor %}
+    </table>
+    <p><a href="{{ url_for('admin_dashboard') }}">← Back to Dashboard</a></p>
+  </div>
+</body>
+</html>

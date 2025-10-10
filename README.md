@@ -1,5 +1,5 @@
 1. Clone the repository:
-   git clone https://github.com/yourusername/HireMeRwanda.git
+   git clone https://github.com/Niyonkuru-olivier/job_connect_rwanda.git
 
 2. Navigate to the project directory:
    cd HireMeRwanda

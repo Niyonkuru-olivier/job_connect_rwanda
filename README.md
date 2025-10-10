@@ -48,15 +48,7 @@ Publish and manage announcements for employers and job seekers
 
 View all job applications in one place
 
-Technologies Used
-Category	Technology
-Backend	Python (Flask)
-Database	SQLite / MySQL
-Frontend	HTML5, CSS3, JavaScript
-Templating	Jinja2
-Email Service	Flask-Mail (SMTP with Gmail)
-File Uploads	Flask’s werkzeug secure file handling
-Styling Framework	Custom CSS (with color theme: #00a859 green, #f8f8f8 background)
+Installation & Setup
 
 1. Clone the repository:
    git clone https://github.com/Niyonkuru-olivier/job_connect_rwanda.git
